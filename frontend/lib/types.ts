@@ -38,11 +38,19 @@ export type SessionResponse = {
   case: VisibleCase;
 };
 
+export type AnalysisTab = {
+  id: string;
+  label: string;
+  body: string;
+  bullets: string[];
+};
+
 export type RubricScore = {
   criterion: string;
   score: number;
   max_score: number;
   comments: string;
+  tabs?: AnalysisTab[];
 };
 
 export type EvaluationResult = {
@@ -50,6 +58,9 @@ export type EvaluationResult = {
   max_score: number;
   summary: string;
   hidden_diagnosis: string;
+  diagnosis_correct: boolean;
+  diagnosis_match?: "exact" | "related" | "miss";
+  diagnosis_explanation: string;
   rubric: RubricScore[];
   missed_questions: string[];
   strengths: string[];

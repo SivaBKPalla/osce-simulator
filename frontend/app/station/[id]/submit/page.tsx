@@ -3,6 +3,7 @@
 import { FormEvent, Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
+import { AnalysisTabs } from "@/components/AnalysisTabs";
 import { api } from "@/lib/api";
 import type { EvaluationResult, VisibleCase } from "@/lib/types";
 
@@ -109,9 +110,19 @@ function SubmitClient() {
                 <span className="text-xl text-paper/60"> / {result.max_score}</span>
               </p>
               <p className="mt-2 text-sm text-paper/80">{result.summary}</p>
-              <p className="mt-3 text-sm">
-                Hidden diagnosis: <span className="text-clinic-soft">{result.hidden_diagnosis}</span>
-              </p>
+              <div className="mt-4 rounded-xl bg-white/10 px-4 py-3">
+                <p className="text-xs uppercase tracking-[0.16em] text-paper/60">
+                  {result.diagnosis_match === "exact" || result.diagnosis_correct
+                    ? "Diagnosis matched"
+                    : result.diagnosis_match === "related"
+                      ? "Related — half credit"
+                      : "Correct diagnosis"}
+                </p>
+                <p className="mt-1 font-medium text-clinic-soft">{result.hidden_diagnosis}</p>
+                {result.diagnosis_explanation && (
+                  <p className="mt-2 text-sm text-paper/80">{result.diagnosis_explanation}</p>
+                )}
+              </div>
             </div>
             <div className="space-y-3">
               {result.rubric.map((row) => (
@@ -129,6 +140,7 @@ function SubmitClient() {
                     />
                   </div>
                   <p className="mt-2 text-sm text-ink-muted">{row.comments}</p>
+                  {row.tabs && row.tabs.length > 0 && <AnalysisTabs tabs={row.tabs} />}
                 </article>
               ))}
             </div>

@@ -78,11 +78,19 @@ class Session(BaseModel):
     submitted: bool = False
 
 
+class AnalysisTab(BaseModel):
+    id: str
+    label: str
+    body: str
+    bullets: list[str] = Field(default_factory=list)
+
+
 class RubricScore(BaseModel):
     criterion: str
     score: int
     max_score: int
     comments: str
+    tabs: list[AnalysisTab] = Field(default_factory=list)
 
 
 class EvaluationResult(BaseModel):
@@ -90,6 +98,9 @@ class EvaluationResult(BaseModel):
     max_score: int
     summary: str
     hidden_diagnosis: str
+    diagnosis_correct: bool = False
+    diagnosis_match: str = "miss"
+    diagnosis_explanation: str = ""
     rubric: list[RubricScore]
     missed_questions: list[str]
     strengths: list[str]
