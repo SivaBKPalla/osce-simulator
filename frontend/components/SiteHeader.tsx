@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 const tabs = [
   { href: "/", label: "Circuit" },
   { href: "/about", label: "About Me" },
-  { href: "/coffee", label: "Buy me a coffee" },
 ];
 
 export function SiteHeader() {
