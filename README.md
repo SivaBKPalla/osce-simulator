@@ -38,8 +38,9 @@ Open [http://localhost:3000](http://localhost:3000).
 
 1. Put this project on GitHub (public repo).
 2. Open [Render Blueprint](https://dashboard.render.com/blueprints) and connect the repo. Render reads `render.yaml` and starts two free web services: the API and the Next.js UI.
-3. After the API is live, confirm `API_PROXY_TARGET` on the web service is the API URL (for example `https://osce-simulator-api.onrender.com`).
-4. Optional: add `OPENAI_API_KEY` on the API service for live AI patients and circuits.
+3. If a first sync failed, push this update (Python 3.12 pin) and click **Manual Sync** on the Blueprint page.
+4. After the API is live, confirm `API_PROXY_TARGET` on the web service is the public API URL (Render sets this from `RENDER_EXTERNAL_URL`).
+5. Optional: add `OPENAI_API_KEY` on the API service for live AI patients and circuits.
 
 Free Render services sleep after idle time; the first visit after a nap can take about a minute.
 
