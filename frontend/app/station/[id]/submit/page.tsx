@@ -125,8 +125,8 @@ function SubmitClient() {
               </div>
             </div>
             <div className="space-y-3">
-              {result.rubric.map((row) => (
-                <article key={row.criterion} className="rounded-xl border border-black/10 p-4">
+              {result.rubric.map((row, index) => (
+                <article key={`${row.criterion}-${index}`} className="rounded-xl border border-black/10 p-4">
                   <div className="flex items-center justify-between gap-4">
                     <h2 className="font-medium">{row.criterion}</h2>
                     <p className="tabular-nums text-sm">
@@ -140,7 +140,9 @@ function SubmitClient() {
                     />
                   </div>
                   <p className="mt-2 text-sm text-ink-muted">{row.comments}</p>
-                  {row.tabs && row.tabs.length > 0 && <AnalysisTabs tabs={row.tabs} />}
+                  {row.tabs && row.tabs.length > 0 && (
+                    <AnalysisTabs key={`${row.criterion}-${index}-tabs`} tabs={row.tabs} />
+                  )}
                 </article>
               ))}
             </div>
@@ -186,7 +188,11 @@ function NoteList({ title, items }: { title: string; items: string[] }) {
     <div className="rounded-xl bg-clinic-soft/40 p-4">
       <h3 className="text-xs uppercase tracking-[0.16em] text-clinic-dark">{title}</h3>
       <ul className="mt-2 list-disc space-y-1 pl-4 text-sm">
-        {items.length === 0 ? <li>None noted</li> : items.map((item) => <li key={item}>{item}</li>)}
+        {items.length === 0 ? (
+          <li>None noted</li>
+        ) : (
+          items.map((item, index) => <li key={`${title}-${index}`}>{item}</li>)
+        )}
       </ul>
     </div>
   );
