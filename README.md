@@ -42,7 +42,15 @@ Open [http://localhost:3000](http://localhost:3000).
 4. After the API is live, confirm `API_PROXY_TARGET` on the web service is the public API URL (Render sets this from `RENDER_EXTERNAL_URL`).
 5. Optional: add `OPENAI_API_KEY` on the API service for live AI patients and circuits.
 
-A GitHub Action pings the live API and site every 10 minutes so the free Render services stay awake. The website also retries and waits if a request still hits a cold start.
+## Why the live API sleeps
+
+Render’s **free** web services shut down after about 15 minutes with no traffic. That is a host limit, not a bug in the simulator. A restart would also wipe in-memory stations, so this repo **pings** the API instead of rebooting it.
+
+- **24/7 from GitHub:** `.github/workflows/keep-awake.yml` pings both services every 5 minutes.
+- **Every 60 seconds from your PC:** double-click `scripts/keep-awake.cmd`, or run `node scripts/keep-awake.mjs` and leave the window open.
+- **Always-on hosting:** a paid Render instance stays up without pings. Vercel is a good home for the Next.js UI, but it will not run this FastAPI API as a 24/7 process (the interview state lives in memory on one server).
+
+A GitHub Action pings the live API and site every 5 minutes so the free Render services stay awake. The website also retries and waits if a request still hits a cold start.
 
 ## Features
 
