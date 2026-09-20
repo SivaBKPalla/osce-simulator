@@ -48,7 +48,7 @@ export default function DashboardPage() {
         setLoading(false);
         setError("Could not load stations. Tap Deal a new circuit to try again.");
       }
-    }, 20_000);
+    }, 60_000);
 
     void loadBoard();
     return () => {
@@ -164,6 +164,10 @@ export default function DashboardPage() {
         </form>
       </section>
 
+      <p className="rounded-xl border border-clinic/25 bg-clinic-soft/60 px-4 py-3 text-sm text-clinic-dark">
+        If it isn’t loading, give it about 60 seconds. The clinic server may be waking up.
+      </p>
+
       {error && (
         <p className="rounded-xl border border-rust/30 bg-rust/10 px-4 py-3 text-sm text-rust">
           {error}
@@ -179,7 +183,7 @@ export default function DashboardPage() {
             />
           ))}
           <p className="text-sm text-ink-muted md:col-span-2 xl:col-span-3">
-            Loading stations…
+            Loading stations… If this sits here, give it about 60 seconds.
           </p>
         </section>
       ) : (
