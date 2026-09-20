@@ -33,7 +33,7 @@ export default function DashboardPage() {
       .catch(() => {
         if (!cancelled) {
           setError(
-            "The clinic API is waking up or unreachable. Free hosting sleeps when idle — wait a few seconds and reload.",
+            "The clinic API did not come online. Stay on this page a moment, then reload.",
           );
         }
       })

@@ -42,7 +42,7 @@ Open [http://localhost:3000](http://localhost:3000).
 4. After the API is live, confirm `API_PROXY_TARGET` on the web service is the public API URL (Render sets this from `RENDER_EXTERNAL_URL`).
 5. Optional: add `OPENAI_API_KEY` on the API service for live AI patients and circuits.
 
-Free Render services sleep after idle time; the first visit after a nap can take about a minute.
+A GitHub Action pings the live API and site every 10 minutes so the free Render services stay awake. The website also retries and waits if a request still hits a cold start.
 
 ## Features
 
