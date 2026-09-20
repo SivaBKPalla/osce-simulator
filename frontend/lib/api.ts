@@ -8,6 +8,9 @@ import type {
 
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "");
 
+const UNREACHABLE =
+  "The clinic API is waking up or unreachable. Free hosting sleeps when idle — wait a few seconds and reload.";
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
     ...init,
@@ -24,6 +27,19 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   }
 
   return response.json() as Promise<T>;
+}
+
+async function withWake<T>(fn: () => Promise<T>, attempts = 6): Promise<T> {
+  let last: unknown;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      return await fn();
+    } catch (err) {
+      last = err;
+      await new Promise((resolve) => setTimeout(resolve, 2500 * (attempt + 1)));
+    }
+  }
+  throw last instanceof Error ? last : new Error(UNREACHABLE);
 }
 
 export const api = {
@@ -50,6 +66,8 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ message }),
     }),
+  wake: () => withWake(() => request<{ status: string; llm: string }>("/api/health")),
+  withWake,
   evaluate: (
     sessionId: string,
     payload: {

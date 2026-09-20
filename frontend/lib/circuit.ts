@@ -12,7 +12,7 @@ export function loadCircuit(force = false): Promise<VisibleCase[]> {
     return inflight;
   }
   inflight = api
-    .freshCircuit(force)
+    .withWake(() => api.freshCircuit(force))
     .then((items) => {
       cached = items;
       return items;

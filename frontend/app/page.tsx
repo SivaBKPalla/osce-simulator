@@ -21,15 +21,21 @@ export default function DashboardPage() {
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([loadCircuit(), api.health().catch(() => ({ llm: "offline" }))])
-      .then(([items, health]) => {
-        if (!cancelled) {
-          setCases(items);
-          setLlmMode(health.llm);
-        }
+    api
+      .wake()
+      .then((health) => {
+        if (!cancelled) setLlmMode(health.llm);
+        return loadCircuit();
+      })
+      .then((items) => {
+        if (!cancelled) setCases(items);
       })
       .catch(() => {
-        if (!cancelled) setError("Could not reach the FastAPI backend on port 8000.");
+        if (!cancelled) {
+          setError(
+            "The clinic API is waking up or unreachable. Free hosting sleeps when idle — wait a few seconds and reload.",
+          );
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -161,7 +167,7 @@ export default function DashboardPage() {
             />
           ))}
           <p className="text-sm text-ink-muted md:col-span-2 xl:col-span-3">
-            Writing a new AI circuit…
+            Waking the clinic API if it was asleep, then writing a new circuit…
           </p>
         </section>
       ) : (
