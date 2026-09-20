@@ -1,4 +1,3 @@
-import { isTransientStatus, sleep } from "./api-origin";
 import type {
   EvaluationResult,
   GenerateCasePayload,
@@ -7,29 +6,51 @@ import type {
   ChatMessage,
 } from "./types";
 
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "");
-const ATTEMPTS = 6;
+const PRODUCTION_API = "https://osce-simulator-api.onrender.com";
+const ATTEMPTS = 3;
+const ATTEMPT_MS = 12_000;
 
-const UNREACHABLE =
-  "The clinic API is starting. Stay on this page — it will keep trying, then reload if it is still down.";
+function apiBase() {
+  const fromEnv = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "");
+  if (fromEnv) return fromEnv;
+  if (typeof window !== "undefined" && /\.onrender\.com$/i.test(window.location.hostname)) {
+    return PRODUCTION_API;
+  }
+  return "";
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isTransientStatus(status: number) {
+  return status === 502 || status === 503 || status === 504;
+}
+
+function timeoutSignal(ms: number) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  return { controller, timer };
+}
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  let lastError: Error = new Error(UNREACHABLE);
+  let lastError: Error = new Error("Could not reach the clinic API.");
 
   for (let attempt = 0; attempt < ATTEMPTS; attempt += 1) {
+    const { controller, timer } = timeoutSignal(ATTEMPT_MS);
     try {
-      const response = await fetch(`${API_BASE}${path}`, {
+      const response = await fetch(`${apiBase()}${path}`, {
         ...init,
         headers: {
           "Content-Type": "application/json",
           ...(init?.headers ?? {}),
         },
         cache: "no-store",
-        signal: AbortSignal.timeout(60_000),
+        signal: controller.signal,
       });
 
       if (isTransientStatus(response.status) && attempt < ATTEMPTS - 1) {
-        await sleep(3_000 + attempt * 2_000);
+        await sleep(1_500);
         continue;
       }
 
@@ -40,20 +61,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
       return (await response.json()) as T;
     } catch (error) {
-      lastError = error instanceof Error ? error : new Error(UNREACHABLE);
-      const canRetry =
-        attempt < ATTEMPTS - 1 &&
-        (lastError.name === "TimeoutError" ||
-          lastError.name === "AbortError" ||
-          lastError.message.includes("Failed to fetch") ||
-          lastError.message.includes("NetworkError") ||
-          lastError.message.includes("503") ||
-          lastError.message.includes("502") ||
-          lastError.message.includes("504"));
-      if (!canRetry) {
-        throw lastError;
-      }
-      await sleep(3_000 + attempt * 2_000);
+      lastError = error instanceof Error ? error : lastError;
+      if (attempt >= ATTEMPTS - 1) break;
+      await sleep(1_500);
+    } finally {
+      clearTimeout(timer);
     }
   }
 
@@ -62,7 +74,6 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   health: () => request<{ status: string; llm: string }>("/api/health"),
-  wake: () => request<{ status: string; llm: string }>("/api/health"),
   listCases: () => request<VisibleCase[]>("/api/cases"),
   freshCircuit: (force = false) =>
     request<VisibleCase[]>(`/api/cases/circuit${force ? "?force=true" : ""}`, {

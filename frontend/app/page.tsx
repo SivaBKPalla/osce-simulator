@@ -21,27 +21,39 @@ export default function DashboardPage() {
 
   useEffect(() => {
     let cancelled = false;
-    api
-      .wake()
-      .then((health) => {
-        if (!cancelled) setLlmMode(health.llm);
-        return loadCircuit();
-      })
-      .then((items) => {
-        if (!cancelled) setCases(items);
-      })
-      .catch(() => {
+    let settled = false;
+
+    async function loadBoard() {
+      try {
+        const [items, health] = await Promise.all([
+          loadCircuit(),
+          api.health().catch(() => ({ llm: "offline" })),
+        ]);
+        if (cancelled) return;
+        setCases(items);
+        setLlmMode(health.llm);
+        setError("");
+      } catch {
         if (!cancelled) {
-          setError(
-            "The clinic API did not come online. Stay on this page a moment, then reload.",
-          );
+          setError("Could not load stations. Tap Deal a new circuit to try again.");
         }
-      })
-      .finally(() => {
+      } finally {
+        settled = true;
         if (!cancelled) setLoading(false);
-      });
+      }
+    }
+
+    const watchdog = window.setTimeout(() => {
+      if (!cancelled && !settled) {
+        setLoading(false);
+        setError("Could not load stations. Tap Deal a new circuit to try again.");
+      }
+    }, 20_000);
+
+    void loadBoard();
     return () => {
       cancelled = true;
+      window.clearTimeout(watchdog);
     };
   }, []);
 
@@ -167,7 +179,7 @@ export default function DashboardPage() {
             />
           ))}
           <p className="text-sm text-ink-muted md:col-span-2 xl:col-span-3">
-            Waking the clinic API if it was asleep, then writing a new circuit…
+            Loading stations…
           </p>
         </section>
       ) : (

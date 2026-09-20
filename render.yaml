@@ -32,3 +32,5 @@ services:
           name: osce-simulator-api
           type: web
           envVarKey: RENDER_EXTERNAL_URL
+      - key: NEXT_PUBLIC_API_URL
+        value: https://osce-simulator-api.onrender.com
